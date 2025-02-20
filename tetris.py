@@ -78,7 +78,7 @@ class Tetris():
     }
 
     def __init__(self):
-        self.reset() # need to create a function for this
+        self.reset_board()
 
 ######################################## BLOCK FUNCTIONS ########################################
 
@@ -88,8 +88,8 @@ class Tetris():
     
 
     def get_block_choice(self):
-        if not self.block_set:
-            self.block_set = self.BLOCKS.keys()
+        if not self.block_list:
+            self.block_list = self.BLOCKS.keys()
         return random.randint(0, len(self.BLOCKS))
 
     # Create a new piece: directly modifies the class variables
@@ -97,7 +97,7 @@ class Tetris():
         random_choice = self.get_block_choice()
 
         self.current_piece = self.next_piece # We want to know next piece in advance to help inform the current move.
-        self.next_piece = self.block_set.pop(random_choice) # This is the new piece we grab
+        self.next_piece = self.block_list.pop(random_choice) # This is the new piece we grab
 
         self.current_angle = 0
         self.current_position = [3, 0] # NOTE: WHY?
@@ -128,20 +128,49 @@ class Tetris():
 
         
 ######################################## BOARD FUNCTIONS ########################################
+    def get_num_empty_squares():
+        x = None
 
-def reset_board(self):
-    # Resets all of the states of the board
-    self.game_over = False
-    self.score = 0
-    self.new_round() # NOTE: FUNCTION DOES NOT EXIST YET
 
-    self.board = [[0] * self.BOARD_WIDTH for _ in self.BOARD_HEIGHT]
+    def get_bumpiness_stats():
+        x = None
 
-    self.block_set = self.BLOCKS.keys()
-    self.next_piece = self.block_set.pop(self.get_block_choice()) 
 
-    return self.get_board_props(self.board) # NOTE: FUNCTION DOES NOT EXIST YET
+    def get_height_stats():
+        x = None
 
+
+    def get_board_properties(self, board): # to get the different stats to help train? i think?
+        lines, board = self.clear_lines(board)
+        holes = self.get_num_empty_squares(board)  # NOTE: FUNCTION DOES NOT EXIST YET
+        total_bumpiness, max_bumpiness = self.get_bumpiness_stats(board) # NOTE: FUNCTION DOES NOT EXIST YET
+        sum_height, max_height, min_height = self.get_height_stats(board) # NOTE: FUNCTION DOES NOT EXIST YET
+        return [lines, holes, total_bumpiness, sum_height]
+
+
+    def clear_lines(self, board): # NOTE: why is board needed here? why can't we call self.board?
+        cleared_lines = [col for col, row in enumerate(board) if all(x == 1 for x in row)] 
+        if cleared_lines:
+            board = [row for col, row in enumerate(board) if col not in cleared_lines] # NOTE: i think the col and row should be reverse..?
+            # --> like we should probably be grabbing row for lines_to_clear right?
+            for _ in cleared_lines: # Add new lines to top of board
+                board.insert(0, [[0] for _ in self.BOARD_WIDTH]) # NOTE: should it be Tetris.BOARD_WIDTH? Why?
+        return len(cleared_lines), board
+            
+
+    def reset_board(self):
+        # Resets all of the states of the board
+        self.game_over = False
+        self.score = 0
+        self.get_new_piece()
+
+        self.board = [[0] * self.BOARD_WIDTH for _ in self.BOARD_HEIGHT]
+
+        self.block_list = self.BLOCKS.keys()
+        self.next_piece = self.block_list.pop(self.get_block_choice()) 
+
+        # clear the board
+        return self.get_board_properties(self.board) 
     
 
         
