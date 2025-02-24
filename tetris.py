@@ -1,27 +1,18 @@
 import random
 import numpy as np
+import cv2
+from PIL import Image
+from time import sleep
 
 class Tetris():
-    # Things I probably need off the top of my head:
-        # the actual grid structure
-        # place a block - DONE
-            # initialize a new piece - DONE
-                # randomly get the next block - DONE
-            # rotate block - DONE
-        # clear a line
-            # get the points from that line
-        # game over condition
-        # reset the game
-            # start the game?
-        # reward system
-        # render the game so we can see as we play
-    
-    # constants usually written in all caps
-    # nested dictionary with the 2D vals as if you're in the bottom left corner of the grid
-        # layer 1 is the blocktype, layer 2 is the rotation
 
     BOARD_WIDTH, BOARD_HEIGHT = 10, 20
     PLAYER_HOVER = 2
+    MAP_EMPTY = 0
+    MAP_BLOCK = 1
+    # MAP_COLORS = {
+    # } # What i have to do here:
+        # change the block IDs to match their color IDs
 
     BLOCKS = { # Taken from https://github.com/nuno-faria/tetris-ai/blob/master/tetris.py
         0: { # I
@@ -68,16 +59,25 @@ class Tetris():
         }
     }
 
+    # in order to use all these colors, you will have to rewrite the code s.t. different blocks map to different colors
+
+    # COLORS = {
+    # 'Black': (0, 0, 0),       # #000000 -> (0, 0, 0)
+    # 'Green': (57, 214, 0),    # #00D639 -> (0, 214, 57) -> (57, 214, 0)
+    # 'Purple': (225, 0, 189),  # #BD00E1 -> (189, 0, 225) -> (225, 0, 189)
+    # 'Red': (0, 0, 226),       # #E20000 -> (226, 0, 0) -> (0, 0, 226)
+    # 'Yellow': (1, 206, 223),  # #DFCE01 -> (223, 206, 1) -> (1, 206, 223)
+    # 'Blue': (229, 127, 2),    # #027FE5 -> (2, 127, 229) -> (229, 127, 2)
+    # 'Orange': (0, 158, 229),  # #E59E00 -> (229, 158, 0) -> (0, 158, 229)
+    # 'Cyan': (224, 202, 0)     # #00CAE0 -> (0, 202, 224) -> (224, 202, 0) 
+    # }
+
     COLORS = {
-        'Black': '#000000',
-        'Green': '#00D639',
-        'Purple': '#BD00E1',
-        'Red': '#E20000', 
-        'Yellow': '#DFCE01', 
-        'Blue': '#027FE5', 
-        'Orange': '#E59E00', 
-        'Cyan': '#00CAE0'
+        0: (255, 255, 255),
+        1: (99, 64, 247),
+        2: (247, 167, 0),
     }
+
 
     def __init__(self):
         self.reset_board()
@@ -85,15 +85,21 @@ class Tetris():
 ######################################## BLOCK FUNCTIONS ########################################
 
 
-    def check_overflow(self, piece_details, current_position):
-        # Is this needed for just regular gameplay to enforce edges?
-        return None # filler
+    def check_collision(self, piece, current_position):
+        for x, y in piece:
+            x += current_position[0]
+            y += current_position[1]
+            if (x < 0 or x >= Tetris.BOARD_WIDTH 
+                    or y < 0 or y >= Tetris.BOARD_HEIGHT 
+                    or self.board[y][x] == Tetris.MAP_BLOCK):
+                return True
+        return False
     
 
     def get_block_choice(self):
         if not self.block_list:
-            self.block_list = self.BLOCKS.keys()
-        return random.randint(0, len(self.BLOCKS))
+            self.block_list = list(self.BLOCKS.keys())
+        return random.randint(0, len(self.block_list)-1) # NOTE: will likely have to change if you change color
 
     # Create a new piece: directly modifies the class variables
     def get_new_piece(self):
@@ -105,7 +111,7 @@ class Tetris():
         self.current_angle = 0
         self.current_position = [3, 0] # NOTE: WHY?
 
-        if self.check_overflow(self.get_piece_details, self.current_position): self.game_over = True      
+        if self.check_collision(self.get_rotated_piece(), self.current_position): self.game_over = True   # NOTE: This function doesn't exist yet
 
 
     # Rotate piece: directly modifies the class variables
@@ -126,7 +132,7 @@ class Tetris():
         current_board = [x[:] for x in self.board] # NOTE: I don't know what this does exactly yet
         for x, y in piece:
             # NOTE: maybe here is were we can assign color later with different values?
-            current_board[y + position[1]][x + position[0]] = 1 # fill those coordinates 
+            current_board[y + position[1]][x + position[0]] = Tetris.MAP_BLOCK # fill those coordinates 
         return current_board
 
         
@@ -135,17 +141,17 @@ class Tetris():
 
     def get_num_empty_squares(self, board):
         board_arr = np.array(board)
-        mask = board_arr == 1
+        mask = board_arr == Tetris.MAP_BLOCK
 
         # Let's find the first block in each column. mask.argmax() will give us first occurence of True --> use argmax if the col is nonempty, else use board height
         first_block_ind = np.where(mask.any(axis=0), mask.argmax(axis=0), Tetris.BOARD_HEIGHT)
         # Sum of empty cells where the index is greater than (physically below) the first_block_ind
-        return np.sum(board_arr = 0) & np.arange(Tetris.BOARD_HEIGHT)[:, None] > first_block_ind
+        return np.sum((board_arr == Tetris.MAP_EMPTY) & (np.arange(Tetris.BOARD_HEIGHT)[:, None] > first_block_ind))
 
 
     def get_bumpiness(self, board):
         board_arr = np.array(board)
-        heights = np.argmax(board_arr == 1, axis = 0) # Find max index where there is a 
+        heights = np.argmax(board_arr == Tetris.MAP_BLOCK, axis = 0) # Find max index where there is a block. NOTE: should probably make this > when we map colors
 
         heights[heights == 0] = Tetris.BOARD_HEIGHT # Bc we find max from the top, not from bottom
         bumpiness = np.abs(np.diff(heights)) # Get absolute value of difference between adjacent col heights
@@ -154,7 +160,7 @@ class Tetris():
 
     def get_height(self, board):
         board_arr = np.array(board)
-        heights = Tetris.BOARD_HEIGHT - np.argmax(board_arr != 0, axis=0) # we want actual height now, not just diffs
+        heights = Tetris.BOARD_HEIGHT - np.argmax(board_arr != Tetris.MAP_EMPTY, axis=0) # we want actual height now, not just diffs
         heights[np.all(board_arr == 0, axis=0)] = 0 # NOTE: Should we replace these 2 lines in bumpiness with these?
 
         return np.sum(heights), np.max(heights), np.min(heights) 
@@ -169,7 +175,7 @@ class Tetris():
 
     
     def get_board(self):
-        piece = self.get_rotated_piece
+        piece = self.get_rotated_piece()
         piece = [np.add(square, self.current_position) for square in piece]
         board = [x[:] for x in self.board]
         for x, y in piece: board[y][x] = Tetris.PLAYER_HOVER
@@ -190,12 +196,12 @@ class Tetris():
         # Resets all of the states of the board
         self.game_over = False
         self.score = 0
-        self.get_new_piece()
 
-        self.board = [[0] * Tetris.BOARD_WIDTH for _ in Tetris.BOARD_HEIGHT]
+        self.board = [[0] * Tetris.BOARD_WIDTH for _ in range(Tetris.BOARD_HEIGHT)]
 
-        self.block_list = self.BLOCKS.keys()
+        self.block_list = list(self.BLOCKS.keys())
         self.next_piece = self.block_list.pop(self.get_block_choice()) 
+        self.get_new_piece()
 
         # Clear the board
         return self.get_board_properties(self.board) 
@@ -207,10 +213,66 @@ class Tetris():
         return self.score
 
 
-    def play_tetris(self):
-        x = None
+    def make_move(self, x_pos, angle, render=False, render_delay=None):
+        self.current_position = [x_pos, 0] # Find the block's x-axis position on the board
+        self.current_angle = angle
+
+        while not self.check_collision(self.get_rotated_piece(), self.current_position):
+            if render:
+                self.render_game()
+                if render_delay: sleep(render_delay)
+            self.current_position[1] += 1 # move block down until we collide with another block
+        self.current_position[1] -= 1 # once we find a collision, we have to take 1 step backward
+
+        self.board = self.place_piece(self.get_rotated_piece(), self.current_position)
+        lines_cleared, self.board = self.clear_lines(self.board)
+        score = 1 + (lines_cleared ** 2) * Tetris.BOARD_WIDTH # Add 1 point for each piece placed plus reward for clearing lines
+        self.score += score
+
+        self.get_new_piece()
+        if self.game_over: score -= 2 # NOTE: Why?
+        return score, self.game_over
     
     
     def render_game(self):
-        x = None
+        image = [Tetris.COLORS[square_fill] for row in self.get_board() for square_fill in row] # NOTE: want to be able to color by blocks
+        image = np.array(image).reshape(Tetris.BOARD_HEIGHT, Tetris.BOARD_WIDTH, 3).astype(np.uint8)
+        image = Image.fromarray(image, 'RGB')
+        image = image.resize((Tetris.BOARD_WIDTH * 25, Tetris.BOARD_HEIGHT * 25), Image.NEAREST)
+        image = np.array(image)
+        cv2.putText(image, str(self.score), (22, 22), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1)
+        cv2.imshow('image', np.array(image))
+        cv2.waitKey(1)
+
+
+######################################## MODEL FUNCTIONS ########################################
+    
+
+    def get_next_states(self): # Pass possible next states back to the model
+        states = {}
+        piece_id = self.current_piece
+        
+        # Set the rotations possible for each piece type
+        if piece_id == 6: rotations = [0]
+        elif piece_id == 0: rotations = [0, 90]
+        else: rotations = [0, 90, 180, 270]
+
+        for rotation in rotations:
+            piece = Tetris.TETROMINOS[piece_id][rotation]
+            min_x = min([p[0] for p in piece])
+            max_x = max([p[0] for p in piece])
+
+            for x in range(-min_x, Tetris.BOARD_WIDTH - max_x): # For all positions
+                pos = [x, 0]
+
+                while not self.check_collision(piece, pos): pos[1] += 1 # Drop the piece
+                pos[1] -= 1 # Backtrack 1 square once there's a collision
+
+                if pos[1] >= 0: # Valid move (?)
+                    board = self.place_piece(piece, pos)
+                    states[(x, rotation)] = self.get_board_properties(board)
+
+        return states
+
+    
         
