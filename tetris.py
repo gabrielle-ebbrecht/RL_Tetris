@@ -9,10 +9,36 @@ class Tetris():
     BOARD_WIDTH, BOARD_HEIGHT = 10, 20
     PLAYER_HOVER = 2
     MAP_EMPTY = 0
-    MAP_BLOCK = 1
-    # MAP_COLORS = {
-    # } # What i have to do here:
-        # change the block IDs to match their color IDs
+    # MAP_BLOCK = 1
+    MAP_BLOCKS = { 
+    0: 1,  # I 
+    1: 2,  # T 
+    2: 3,  # L 
+    3: 4,  # J 
+    4: 5,  # Z 
+    5: 6,  # S 
+    6: 7   # O 
+    }
+    MAP_COLORS = {
+    0: (0, 0, 0),  # Empty (White)
+    1: (224, 202, 0),    # I (Cyan)
+    2: (225, 0, 189),    # T (Purple)
+    3: (0, 158, 229),    # L (Orange)
+    4: (229, 127, 2),    # J (Blue)
+    5: (0, 0, 226),      # Z (Red)
+    6: (57, 214, 0),     # S (Green)
+    7: (1, 206, 223)     # O (Yellow)
+    # COLORS = {
+    # 'Black': (0, 0, 0),       # #000000 -> (0, 0, 0)
+    # 'Green': (57, 214, 0),    # #00D639 -> (0, 214, 57) -> (57, 214, 0)
+    # 'Purple': (225, 0, 189),  # #BD00E1 -> (189, 0, 225) -> (225, 0, 189)
+    # 'Red': (0, 0, 226),       # #E20000 -> (226, 0, 0) -> (0, 0, 226)
+    # 'Yellow': (1, 206, 223),  # #DFCE01 -> (223, 206, 1) -> (1, 206, 223)
+    # 'Blue': (229, 127, 2),    # #027FE5 -> (2, 127, 229) -> (229, 127, 2)
+    # 'Orange': (0, 158, 229),  # #E59E00 -> (229, 158, 0) -> (0, 158, 229)
+    # 'Cyan': (224, 202, 0)     # #00CAE0 -> (0, 202, 224) -> (224, 202, 0) 
+    # }
+}
 
     BLOCKS = { # Taken from https://github.com/nuno-faria/tetris-ai/blob/master/tetris.py
         0: { # I
@@ -59,24 +85,11 @@ class Tetris():
         }
     }
 
-    # in order to use all these colors, you will have to rewrite the code s.t. different blocks map to different colors
-
     # COLORS = {
-    # 'Black': (0, 0, 0),       # #000000 -> (0, 0, 0)
-    # 'Green': (57, 214, 0),    # #00D639 -> (0, 214, 57) -> (57, 214, 0)
-    # 'Purple': (225, 0, 189),  # #BD00E1 -> (189, 0, 225) -> (225, 0, 189)
-    # 'Red': (0, 0, 226),       # #E20000 -> (226, 0, 0) -> (0, 0, 226)
-    # 'Yellow': (1, 206, 223),  # #DFCE01 -> (223, 206, 1) -> (1, 206, 223)
-    # 'Blue': (229, 127, 2),    # #027FE5 -> (2, 127, 229) -> (229, 127, 2)
-    # 'Orange': (0, 158, 229),  # #E59E00 -> (229, 158, 0) -> (0, 158, 229)
-    # 'Cyan': (224, 202, 0)     # #00CAE0 -> (0, 202, 224) -> (224, 202, 0) 
+    #     0: (255, 255, 255),
+    #     1: (99, 64, 247),
+    #     2: (247, 167, 0),
     # }
-
-    COLORS = {
-        0: (255, 255, 255),
-        1: (99, 64, 247),
-        2: (247, 167, 0),
-    }
 
 
     def __init__(self):
@@ -91,7 +104,7 @@ class Tetris():
             y += current_position[1]
             if (x < 0 or x >= Tetris.BOARD_WIDTH 
                     or y < 0 or y >= Tetris.BOARD_HEIGHT 
-                    or self.board[y][x] == Tetris.MAP_BLOCK):
+                    or self.board[y][x] > Tetris.MAP_EMPTY):
                 return True
         return False
     
@@ -108,6 +121,7 @@ class Tetris():
         self.current_piece = self.next_piece # We want to know next piece in advance to help inform the current move.
         self.next_piece = self.block_list.pop(random_choice) # This is the new piece we grab
 
+        # self.color = Tetris.MAP_COLORS[Tetris.MAP_BLOCKS[self.current_piece]]
         self.current_angle = 0
         self.current_position = [3, 0] # NOTE: WHY?
 
@@ -127,12 +141,12 @@ class Tetris():
     def get_rotated_piece(self): # NOTE: Can we combine this with above? does that make sense? let's see
         return Tetris.BLOCKS[self.current_piece][self.current_angle]
 
+
     # Place piece
     def place_piece(self, piece, position):
-        current_board = [x[:] for x in self.board] # NOTE: I don't know what this does exactly yet
+        current_board = [row[:] for row in self.board] # NOTE: I don't know what this does exactly yet
         for x, y in piece:
-            # NOTE: maybe here is were we can assign color later with different values?
-            current_board[y + position[1]][x + position[0]] = Tetris.MAP_BLOCK # fill those coordinates 
+            current_board[y + position[1]][x + position[0]] = Tetris.MAP_BLOCKS[self.current_piece] # fill those coordinates  # NOTE: MAP_BLOCKS change
         return current_board
 
         
@@ -141,7 +155,7 @@ class Tetris():
 
     def get_num_empty_squares(self, board):
         board_arr = np.array(board)
-        mask = board_arr == Tetris.MAP_BLOCK
+        mask = board_arr > Tetris.MAP_EMPTY
 
         # Let's find the first block in each column. mask.argmax() will give us first occurence of True --> use argmax if the col is nonempty, else use board height
         first_block_ind = np.where(mask.any(axis=0), mask.argmax(axis=0), Tetris.BOARD_HEIGHT)
@@ -151,7 +165,7 @@ class Tetris():
 
     def get_bumpiness(self, board):
         board_arr = np.array(board)
-        heights = np.argmax(board_arr == Tetris.MAP_BLOCK, axis = 0) # Find max index where there is a block. NOTE: should probably make this > when we map colors
+        heights = np.argmax(board_arr > Tetris.MAP_EMPTY, axis = 0) # Find max index where there is a block. 
 
         heights[heights == 0] = Tetris.BOARD_HEIGHT # Bc we find max from the top, not from bottom
         bumpiness = np.abs(np.diff(heights)) # Get absolute value of difference between adjacent col heights
@@ -160,8 +174,8 @@ class Tetris():
 
     def get_height(self, board):
         board_arr = np.array(board)
-        heights = Tetris.BOARD_HEIGHT - np.argmax(board_arr != Tetris.MAP_EMPTY, axis=0) # we want actual height now, not just diffs
-        heights[np.all(board_arr == 0, axis=0)] = 0 # NOTE: Should we replace these 2 lines in bumpiness with these?
+        heights = Tetris.BOARD_HEIGHT - np.argmax(board_arr > Tetris.MAP_EMPTY, axis=0) # we want actual height now, not just diffs
+        heights[np.all(board_arr == Tetris.MAP_EMPTY, axis=0)] = 0 # NOTE: Should we replace these 2 lines in bumpiness with these?
 
         return np.sum(heights), np.max(heights), np.min(heights) 
 
@@ -188,7 +202,7 @@ class Tetris():
             board = [row for col, row in enumerate(board) if col not in cleared_lines] # NOTE: i think the col and row should be reverse..?
             # --> like we should probably be grabbing row for lines_to_clear right?
             for _ in cleared_lines: # Add new lines to top of board
-                board.insert(0, [[0] for _ in Tetris.BOARD_WIDTH]) # NOTE: should it be Tetris.BOARD_WIDTH? Why? --> I think so bc it's a constant not a function
+                board.insert(0, [[0] for _ in Tetris.BOARD_WIDTH])
         return len(cleared_lines), board
             
 
@@ -230,17 +244,32 @@ class Tetris():
         self.score += score
 
         self.get_new_piece()
-        if self.game_over: score -= 2 # NOTE: Why?
+
+        if self.game_over:
+            score -= 2  # NOTE: I assume this is a penalty for losing?
+            self.render_game()  # Make sure final board is displayed NOTE: do we need this?
+
+            cv2.waitKey(0)  # Wait indefinitely for user to press a key
         return score, self.game_over
     
-    
+
     def render_game(self):
-        image = [Tetris.COLORS[square_fill] for row in self.get_board() for square_fill in row] # NOTE: want to be able to color by blocks
+        board_state = self.get_board()
+        image = [Tetris.MAP_COLORS[square_fill] for row in board_state for square_fill in row]
         image = np.array(image).reshape(Tetris.BOARD_HEIGHT, Tetris.BOARD_WIDTH, 3).astype(np.uint8)
+
+        moving_piece = self.get_rotated_piece()
+        x_offset, y_offset = self.current_position
+
+        for x, y in moving_piece:
+            board_x, board_y = x + x_offset, y + y_offset
+            if 0 <= board_x < Tetris.BOARD_WIDTH and 0 <= board_y < Tetris.BOARD_HEIGHT:
+                image[board_y, board_x] = Tetris.MAP_COLORS[Tetris.MAP_BLOCKS[self.current_piece]]
+
         image = Image.fromarray(image, 'RGB')
         image = image.resize((Tetris.BOARD_WIDTH * 25, Tetris.BOARD_HEIGHT * 25), Image.NEAREST)
         image = np.array(image)
-        cv2.putText(image, str(self.score), (22, 22), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1)
+        cv2.putText(image, str(self.score), (22, 22), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 255, 255), 1)
         cv2.imshow('image', np.array(image))
         cv2.waitKey(1)
 
