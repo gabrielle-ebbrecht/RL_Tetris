@@ -5,6 +5,7 @@
 1. Create the tetris environment. I should be able to play by myself using functions? - DONE
 2. Create the DQN
 3. Train and test
+4. MD file with code walkthroughs
 
 # Documentation (for my reference)
 - https://keras-rl.readthedocs.io/en/latest/agents/overview/
