@@ -23,3 +23,12 @@ where G_t is the total discounted return at time t and R_t is the reward receive
 # Our discount is chosen as 0.95 for more equal consideration
 self.discount = discount
 ```
+
+The exploration-exploitation tradeoff in DQN determines the probability of the agent choosing a random action instead of selecting the best-known action. Epsilon of 1 indicates pure exploration as we learn. The epsilon decay parameter defines how quickly epsilon decreases over time. With epsilon_stop_episode, which is the episode number at which epsilon reaches its minimum value, we can increase/descrease the rate of decay, or make episilon static if epsilon_stop_episode == 0. We also set a minimum exploration probability to prevent epsilon from reaching zero and leaving no room for exploration.
+
+```
+self.epsilon = epsilon
+self.epsilon_min = epsilon_min
+self.epsilon_decay = (epsilon - epsilon_min) / epsilon_stop_episode if epsilon_stop_episode > 0 else 0
+```
+

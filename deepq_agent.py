@@ -39,7 +39,7 @@ class DQN_Agent():
         # Discount factor
         self.discount = discount
 
-        # Exploration (epsilon-greedy strategy)
+        # Exploration probability and decay
         self.epsilon = epsilon
         self.epsilon_min = epsilon_min
         self.epsilon_decay = (epsilon - epsilon_min) / epsilon_stop_episode if epsilon_stop_episode > 0 else 0
