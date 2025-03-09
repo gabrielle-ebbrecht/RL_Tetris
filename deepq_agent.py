@@ -1,3 +1,5 @@
+import numpy as np
+import random
 from collections import deque
 
 from tensorflow.python.keras.models import Sequential, load_model
@@ -5,13 +7,9 @@ from tensorflow.python.keras.layers import Dense, Dropout, BatchNormalization
 from tensorflow.python.keras.initializers import HeNormal
 from tensorflow.python.keras.regularizers import l2
 
-
-# What kinds of functions do I need here?
-    # make a choice
-    # get the best state
-
-# In general the model needs
-    # some objective function
+'''
+See the deepq_agent.md file for an in-depth explanation of the DQN_Agent class, functions and parameters!
+'''
 
 class DQN_Agent():
 
@@ -60,7 +58,7 @@ class DQN_Agent():
 
     def build_model(self):
         '''
-        Features:
+        Model Features:
         - L2 Regularization: prevent overfitting. May not be needed for this case. We can compare w/ and w/out
         - Batch normalization: re-center and re-scale activations to improve training stability and speed
         - Dropout: another regulization layer to boost robustness... Also may not be needed
@@ -80,14 +78,38 @@ class DQN_Agent():
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=['accuracy'])
         return model
 
+    
+    def predict_score(self, state): # Predict the score for an action
+        state = np.reshape(state, [1, self.state_size])
+        if random.random() <= self.epsilon: return random.random()
+        else: return self.model.predict(state, verbose=0)[0]
+
+    
+    def get_best_state(self, states):
+        if random.random() <= self.epsilon: return random.choice(list(states))
+
+        else:
+            max_score = best_state = None
+
+            for state in states:
+                score = self.model.predict(np.reshape(state, [1, self.state_size]), verbose=0)[0]
+                if not max_score or score > max_score:
+                    max_score = score
+                    best_state = state
+
+        return best_state
+    
+
+    def add_to_memory(self, current_state, next_state, reward, episode_ended):
+        self.memory.append((current_state, next_state, reward, episode_ended))
+
+
+
 
     def update_model(): 
         return None
     
     def act(): # make a choice
-        return None
-    
-    def predict_score(): # predict the score for an action
         return None
     
     def train(): # more general function to aggregate the others
