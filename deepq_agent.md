@@ -89,4 +89,21 @@ $$Q(s, a) = r + \gamma \max_{a'} Q(s', a')$$
 
 Where $Q(s, a)$ is the expected future reward for taking action $a$ in state $s$, and $r$ is the immediate reward for action $a$ in state $s$. As mentioned, $\gamma$ determines how we weigh future rewards, and is multiplied with the highest expected reward the agent can get from that state, $max_{a'} Q(s', a')$. The use of $\gamma$ also curbs the reward to prevent indefinite growth.
 
-## leaving off at x, y = [], [] !!!
+It is important to note that the Bellman equation is implicitly recursive on $Q(s', a')$, i.e., the "recursion" happens over many episodes of training. This allows $\gamma$ to accumulate over multiple steps, therefore discounting future rewards even more as we look further ahead.
+
+We also compute the target values using the Bellman equation. If the episode is done, the Q value is simply the current reward:
+
+```
+for i, (state, _, reward, episode_ended) in enumerate(batch):
+    if not episode_ended: new_q = reward + self.discount * next_qs[i] # Partial Q formula
+    else: new_q = reward
+```
+
+Finally, we fit the model to the inputs and q values, and decay epsilon:
+
+```
+self.model.fit(np.array(x), np.array(y), batch_size=batch_size, epochs=epochs, verbose=0)
+
+if self.epsilon > self.epsilon_min:
+    self.epsilon -= self.epsilon_decay
+```
