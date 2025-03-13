@@ -104,13 +104,31 @@ class DQN_Agent():
         self.memory.append((current_state, next_state, reward, episode_ended))
 
 
+    def train(self, batch_size=32, epochs=3):
+        if batch_size > self.mem_size:
+            print('WARNING: Insufficient memory - The agent will not be trained until it has reached the experience threshold.')
 
+        n = len(self.memory)
+    
+        if n >= self.replay_start_size and n >= batch_size:
 
-    def update_model(): 
-        return None
-    
-    def act(): # make a choice
-        return None
-    
-    def train(): # more general function to aggregate the others
-        return None
+            batch = random.sample(self.memory, batch_size)
+
+            next_states = np.array([x[1] for x in batch])
+            next_qs = [x[0] for x in self.model.predict(next_states)]
+
+            x, y = [], [] # x = input states, y = respective q-values
+
+            for i, (state, _, reward, done) in enumerate(batch):
+                if not done: new_q = reward + self.discount * next_qs[i] # Partial Q formula
+                else: new_q = reward
+
+                x.append(state)
+                y.append(new_q)
+
+            # Fit the DQN model
+            self.model.fit(np.array(x), np.array(y), batch_size=batch_size, epochs=epochs, verbose=0)
+
+            # Decay epsilon --> toward exploitation as we continue to act
+            if self.epsilon > self.epsilon_min:
+                self.epsilon -= self.epsilon_decay

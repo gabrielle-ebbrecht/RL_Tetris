@@ -60,3 +60,33 @@ Again, if a randomly generated number is less than or equal to the current epsil
 ## add_to_memory()
 
 This function adds a move to the replay memory for use during training. We append the experience tuple of the current state before taking the action, the state after taking the action, the reward for the action, and whether the current episode has ended. The episode (or this series of interactions) ends when the agent gets a "Game Over". This is called the *terminal condition*.
+
+## train()
+
+Training only occurs when the memory has at least replay_start_size experiences and there are at least batch_size samples available (i.e., batch_size > mem_size), preventing training on insufficient experiences and poor generalization of the learned model. If either of these conditions does not hold, the agent will not learn and will rely on random exploration, thus the model weights will not be updated.
+
+```
+if batch_size > self.mem_size:
+    ...
+if n >= self.replay_start_size and n >= batch_size:
+    ...
+```
+
+During this time, the agent will still be exploring and can collect experiences. The training function will resume once the agent has enough experiences to meet the requirements for training.
+
+We then sample batch_size experiences from memory (random sampling breaks correlations in sequential data) and use the model to predict q-values for the *next_states* in the batch:
+
+```
+batch = random.sample(self.memory, batch_size)
+
+next_states = np.array([x[1] for x in batch])
+next_qs = [x[0] for x in self.model.predict(next_states)]
+```
+
+Q-values are found via the Bellman equation for Q-learning: 
+
+$$Q(s, a) = r + \gamma \max_{a'} Q(s', a')$$
+
+Where $Q(s, a)$ is the expected future reward for taking action $a$ in state $s$, and $r$ is the immediate reward for action $a$ in state $s$. As mentioned, $\gamma$ determines how we weigh future rewards, and is multiplied with the highest expected reward the agent can get from that state, $max_{a'} Q(s', a')$. The use of $\gamma$ also curbs the reward to prevent indefinite growth.
+
+## leaving off at x, y = [], [] !!!
