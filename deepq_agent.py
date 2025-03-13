@@ -119,8 +119,8 @@ class DQN_Agent():
 
             x, y = [], [] # x = input states, y = respective q-values
 
-            for i, (state, _, reward, done) in enumerate(batch):
-                if not done: new_q = reward + self.discount * next_qs[i] # Partial Q formula
+            for i, (state, _, reward, episode_ended) in enumerate(batch):
+                if not episode_ended: new_q = reward + self.discount * next_qs[i] # Partial Q formula
                 else: new_q = reward
 
                 x.append(state)
@@ -132,3 +132,7 @@ class DQN_Agent():
             # Decay epsilon --> toward exploitation as we continue to act
             if self.epsilon > self.epsilon_min:
                 self.epsilon -= self.epsilon_decay
+
+
+    def save_model(self, name):
+        self.model.save(name)
