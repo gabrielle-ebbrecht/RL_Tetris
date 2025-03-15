@@ -11,7 +11,7 @@ from tensorflow.python.keras.regularizers import l2
 See the deepq_agent.md file for an in-depth explanation of the DQN_Agent class, functions and parameters!
 '''
 
-class DQN_Agent():
+class DQNAgent():
 
     def __init__(self, state_size, mem_size=10000, discount=0.95,
              epsilon=1.0, epsilon_min=0.0, epsilon_stop_episode=0,
