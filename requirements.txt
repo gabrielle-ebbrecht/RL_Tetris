@@ -6,3 +6,4 @@ tensorflow-macos
 tensorflow-metal
 tensorboard
 keras
+tqdm
