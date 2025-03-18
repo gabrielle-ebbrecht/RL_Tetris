@@ -9,6 +9,7 @@ class Tetris():
     BOARD_WIDTH, BOARD_HEIGHT = 10, 20
     PLAYER_HOVER = 2
     MAP_EMPTY = 0
+    STATE_SIZE = 4
     # MAP_BLOCK = 1
     MAP_BLOCKS = { 
     0: 1,  # I 
@@ -277,7 +278,7 @@ class Tetris():
 ######################################## MODEL FUNCTIONS ########################################
     
     def get_state_size(self): # State representation consists of this many elements/features:
-        return 4
+        return self.STATE_SIZE
     
 
     def get_next_states(self): # Pass possible next states back to the model
