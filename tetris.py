@@ -276,6 +276,9 @@ class Tetris():
 
 ######################################## MODEL FUNCTIONS ########################################
     
+    def get_state_size(self): # State representation consists of this many elements/features:
+        return 4
+    
 
     def get_next_states(self): # Pass possible next states back to the model
         states = {}

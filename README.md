@@ -6,6 +6,7 @@
 2. Create the DQN
 3. Train and test
 4. MD file with code walkthroughs
+5. Complete this README with formula walkthroughs
 
 # Documentation (for my reference)
 - https://keras-rl.readthedocs.io/en/latest/agents/overview/
