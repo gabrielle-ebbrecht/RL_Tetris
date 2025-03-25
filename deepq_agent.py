@@ -1,11 +1,19 @@
 import numpy as np
 import random
+from datetime import datetime
 from collections import deque
+import sys
 
-from tensorflow.python.keras.models import Sequential, load_model
-from tensorflow.python.keras.layers import Dense, Dropout, BatchNormalization
-from tensorflow.python.keras.initializers import HeNormal
-from tensorflow.python.keras.regularizers import l2
+sys.modules['keras'] = __import__('tensorflow.keras') # Have import issues without this line
+from tensorflow.keras.layers import Dense, Dropout, BatchNormalization
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.initializers import HeNormal
+from tensorflow.keras.regularizers import l2
+
+# from tensorflow.python.keras.models import Sequential, load_model
+# from tensorflow.python.keras.layers import Dense, Dropout, BatchNormalization
+# from tensorflow.python.keras.initializers import HeNormal
+# from tensorflow
 
 '''
 See the deepq_agent.md file for an in-depth explanation of the DQN_Agent class, functions and parameters!
@@ -52,7 +60,7 @@ class DQNAgent():
         if modelFile:
             self.model = load_model(modelFile) # If we've already trained
         else:
-            self.model = self._build_model()
+            self.model = self.build_model()
 
     
 
