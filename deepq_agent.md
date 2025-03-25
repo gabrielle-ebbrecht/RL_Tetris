@@ -107,3 +107,7 @@ self.model.fit(np.array(x), np.array(y), batch_size=batch_size, epochs=epochs, v
 if self.epsilon > self.epsilon_min:
     self.epsilon -= self.epsilon_decay
 ```
+
+## save_model()
+
+Note: Keras 3+ and TensorFlow 2.12+ recommend saving models with the *.keras* extension. This is best practice to ensure reliable and robust reloading.

@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 def train_agent():
     env = Tetris()
-    episodes = 3000
+    episodes = 10 # NOTE: CHANGE TO 3000 FOR PROPER TRAINING
     episode_step_limit = None # None --> infinite moves (steps); game ends when DQN gets Game Over
     epsilon_stop_episode = 2000
     mem_size = 1000 # Maximum moves stored by the agent
@@ -58,7 +58,7 @@ def train_agent():
             current_state = best_state
             step_count += 1
 
-        game_score = env.get_game_score()
+        game_score = env.get_score()
         scores.append(game_score)
 
         if episode % train_every == 0:
