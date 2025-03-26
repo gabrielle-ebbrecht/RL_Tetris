@@ -250,7 +250,7 @@ class Tetris():
             score -= 2  # NOTE: I assume this is a penalty for losing?
             self.render_game()  # Make sure final board is displayed NOTE: do we need this?
 
-            cv2.waitKey(0)  # Wait indefinitely for user to press a key
+            cv2.waitKey(1)  # Wait indefinitely for user to press a key
         return score, self.game_over
     
 
@@ -271,7 +271,7 @@ class Tetris():
         image = image.resize((Tetris.BOARD_WIDTH * 25, Tetris.BOARD_HEIGHT * 25), Image.NEAREST)
         image = np.array(image)
         cv2.putText(image, str(self.score), (22, 22), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 255, 255), 1)
-        cv2.imshow('image', np.array(image))
+        cv2.imshow('Tetris Gameplay', np.array(image))
         cv2.waitKey(1)
 
 
@@ -291,7 +291,7 @@ class Tetris():
         else: rotations = [0, 90, 180, 270]
 
         for rotation in rotations:
-            piece = Tetris.TETROMINOS[piece_id][rotation]
+            piece = Tetris.BLOCKS[piece_id][rotation]
             min_x = min([p[0] for p in piece])
             max_x = max([p[0] for p in piece])
 

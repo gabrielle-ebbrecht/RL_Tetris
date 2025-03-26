@@ -1,15 +1,17 @@
+import numpy as np
+from datetime import datetime
+from statistics import mean
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+
 from deepq_agent import DQNAgent
 from tetris import Tetris
 from logs import CustomTensorBoard
 
-from datetime import datetime
-from statistics import mean
-from tqdm import tqdm
-
 
 def train_agent():
     env = Tetris()
-    episodes = 10 # NOTE: CHANGE TO 3000 FOR PROPER TRAINING
+    episodes = 3000
     episode_step_limit = None # None --> infinite moves (steps); game ends when DQN gets Game Over
     epsilon_stop_episode = 2000
     mem_size = 1000 # Maximum moves stored by the agent
@@ -41,7 +43,7 @@ def train_agent():
     scores = []
     best_score = 0
 
-    for episode in tqdm(range(episodes)):
+    for episode in tqdm(range(episodes), leave=True):
         current_state = env.reset_board()
         done = False
         step_count = 0
@@ -52,7 +54,7 @@ def train_agent():
             best_state = agent.get_best_state(next_states.keys())
             best_action = next_states[best_state]
 
-            reward, done = env.play(best_action[0], best_action[1], render=render, render_delay=render_delay)
+            reward, done = env.make_move(best_action[0], best_action[1], render=render, render_delay=render_delay)
             
             agent.add_to_memory(current_state, best_state, reward, done)
             current_state = best_state
@@ -74,6 +76,16 @@ def train_agent():
             print(f'Saving new optimal model:\nHigh Score={game_score}\nEpisode={episode})')
             best_score = game_score
             agent.save_model("best.keras")
+    
+    np.save("scores.npy", np.array(scores)) # I can look at / plot again later if I want to
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(scores, label="Game Score per Episode", color="blue")
+    plt.xlabel("Episode")
+    plt.ylabel("Score")
+    plt.title("Tetris DQN Training Progress")
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":
