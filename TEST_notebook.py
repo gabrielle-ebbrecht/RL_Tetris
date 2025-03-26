@@ -4,11 +4,12 @@ import cv2
 import numpy as np
 from datetime import datetime
 from statistics import mean
-import tqdm
+from tqdm import tqdm
 
 from tetris import Tetris
 from deepq_agent import DQNAgent
 from logs import CustomTensorBoard
+from train_dqn import train_agent
 
 
 # %%
@@ -58,7 +59,6 @@ n_neurons = [32, 32, 32] # Number of neurons for each activation layer
 activations = ['relu', 'relu', 'relu', 'linear'] # Activation layers
 save_best_model = True # Saves the best model so far at "best.keras"
 
-# %%
 
 agent = DQNAgent(
     env.get_state_size(),
@@ -85,6 +85,7 @@ scores = []
 best_score = 0
 
 for episode in tqdm(range(episodes)):
+    print(f"Starting episode {episode + 1}")
     current_state = env.reset_board()
     done = False
     step_count = 0
@@ -95,8 +96,8 @@ for episode in tqdm(range(episodes)):
         best_state = agent.get_best_state(next_states.keys())
         best_action = next_states[best_state]
 
-        reward, done = env.play(best_action[0], best_action[1], render=render, render_delay=render_delay)
-        
+        reward, done = env.make_move(best_action[0], best_action[1], render=render, render_delay=render_delay)
+
         agent.add_to_memory(current_state, best_state, reward, done)
         current_state = best_state
         step_count += 1
@@ -117,3 +118,21 @@ for episode in tqdm(range(episodes)):
         print(f'Saving new optimal model:\nHigh Score={game_score}\nEpisode={episode})')
         best_score = game_score
         agent.save_model("best.keras")
+
+
+# %%
+
+import random as r
+import matplotlib.pyplot as plt
+
+test_scores = []
+for i in range(3000):
+    test_scores.append(r.randint(0, 100))
+
+plt.figure(figsize=(10, 5))
+plt.plot(test_scores, label="Game Score per Episode", color="blue")
+plt.xlabel("Episode")
+plt.ylabel("Score")
+plt.title("Training Game Scores")
+plt.legend()
+plt.show()

@@ -7,3 +7,4 @@ tensorflow-metal
 tensorboard
 keras
 tqdm
+matplotlib
