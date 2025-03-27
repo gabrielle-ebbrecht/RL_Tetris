@@ -127,7 +127,7 @@ import matplotlib.pyplot as plt
 
 test_scores = []
 for i in range(3000):
-    test_scores.append(r.randint(0, 100))
+    test_scores.append(i + r.randint(0, 100))
 
 plt.figure(figsize=(10, 5))
 plt.plot(test_scores, label="Game Score per Episode", color="blue")
@@ -135,4 +135,25 @@ plt.xlabel("Episode")
 plt.ylabel("Score")
 plt.title("Training Game Scores")
 plt.legend()
+plt.show()
+
+# %%
+
+background_color = "#000000"  # Black
+line_color = "#BD00E1"  # Purple (you can replace with any hex code)
+
+plt.figure(figsize=(10, 5), facecolor=background_color)
+ax = plt.gca()  
+ax.set_facecolor(background_color)  
+
+episodes = list(range(1, len(test_scores) + 1))
+plt.plot(episodes, test_scores, color=line_color, linewidth=2, label="Score")
+plt.xlabel("Episode", color="white")
+plt.ylabel("Score", color="white")
+plt.title("Game Score per Episode", color="white")
+plt.legend(facecolor=background_color, edgecolor="white")
+
+ax.tick_params(colors="white")
+plt.grid(color="gray", linestyle="--", linewidth=0.5)
+
 plt.show()

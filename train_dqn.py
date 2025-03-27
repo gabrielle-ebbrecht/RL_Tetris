@@ -11,18 +11,21 @@ from logs import CustomTensorBoard
 
 def train_agent():
     env = Tetris()
-    episodes = 3000
+    episodes = 1500 #3000
     episode_step_limit = None # None --> infinite moves (steps); game ends when DQN gets Game Over
-    epsilon_stop_episode = 2000
-    mem_size = 1000 # Maximum moves stored by the agent
-    discount = 0.95 # Gamma --> discount factor in the Bellman equation for Q-learning
-    batch_size = 128 # Number of past experiences sampled from the replay memory. 128 is common in RL scenarios
-    epochs = 1 # We train on the batch only once per training step (training too much on the same batch could lead to overfitting)
+    train_every = 1 # Train every episode --> continuous learning rather than batch learning
+    log_every = 50 # Logs the current stats every 50 episodes --> efficient training, better idea of long-term performance
     render_every = 50 # Avoid inefficiency in training --> game will visually render every 50 episodes
     render_delay = None # None --> game renders as fast as possible. Useful for debugging purposes
-    log_every = 50 # Logs the current stats every 50 episodes --> efficient training, better idea of long-term performance
+
+    epsilon_stop_episode = 2000 # epsilon stops decreasing @ x episode
+    discount = 0.95 # Gamma --> discount factor in the Bellman equation for Q-learning
+
+    mem_size = 1000 # Maximum moves stored by the agent
     replay_start_size = 1000 # Minimum experiences required to start training
-    train_every = 1 # Train every episode --> continuous learning rather than batch learning
+    batch_size = 128 # Number of past experiences sampled from the replay memory. 128 is common in RL scenarios
+    epochs = 1 # We train on the batch only once per training step (training too much on the same batch could lead to overfitting)
+    
     n_neurons = [32, 32, 32] # Number of neurons for each activation layer
     activations = ['relu', 'relu', 'relu', 'linear'] # Activation layers
     save_best_model = True # Saves the best model so far at "best.keras"
@@ -78,15 +81,27 @@ def train_agent():
             agent.save_model("best.keras")
     
     np.save("scores.npy", np.array(scores)) # I can look at / plot again later if I want to
-
-    plt.figure(figsize=(10, 5))
-    plt.plot(scores, label="Game Score per Episode", color="blue")
-    plt.xlabel("Episode")
-    plt.ylabel("Score")
-    plt.title("Tetris DQN Training Progress")
-    plt.legend()
-    plt.show()
+    return scores
 
 
 if __name__ == "__main__":
-    train_agent()
+    scores = train_agent()
+
+    background_color = "#000000"  
+    line_color = "#BD00E1" 
+
+    plt.figure(figsize=(10, 5), facecolor=background_color)
+    ax = plt.gca()  
+    ax.set_facecolor(background_color)  
+
+    episodes = list(range(1, len(scores) + 1))
+    plt.plot(episodes, scores, color=line_color, linewidth=2, label="Score")
+    plt.xlabel("Episode", color="white")
+    plt.ylabel("Score", color="white")
+    plt.title("Game Score over Episodes", color="white")
+    plt.legend(facecolor=background_color, edgecolor="white")
+
+    ax.tick_params(colors="white")
+    plt.grid(color="gray", linestyle="--", linewidth=0.5)
+
+    plt.show()
