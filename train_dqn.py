@@ -105,3 +105,4 @@ if __name__ == "__main__":
     plt.grid(color="gray", linestyle="--", linewidth=0.5)
 
     plt.show()
+    # I would also like to plot on a log scale so you can see the progression from 0-800

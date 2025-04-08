@@ -181,13 +181,13 @@ class Tetris():
         return board
 
 
-    def clear_lines(self, board): # NOTE: why is board needed here? why can't we call self.board?
-        cleared_lines = [col for col, row in enumerate(board) if all(x == 1 for x in row)] 
+    def clear_lines(self, board):
+        cleared_lines = [col for col, row in enumerate(board) if all(x > 0 for x in row)] 
         if cleared_lines:
             board = [row for col, row in enumerate(board) if col not in cleared_lines] # NOTE: i think the col and row should be reverse..?
             # --> like we should probably be grabbing row for lines_to_clear right?
             for _ in cleared_lines: # Add new lines to top of board
-                board.insert(0, [[0] for _ in Tetris.BOARD_WIDTH])
+                board.insert(0, [0 for _ in range(Tetris.BOARD_WIDTH)])
         return len(cleared_lines), board
             
 

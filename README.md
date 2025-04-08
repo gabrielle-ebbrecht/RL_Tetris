@@ -1,7 +1,7 @@
 # Hi.
 ### This is my attempt at learning about deep Q networks (and RL in general) via one of my favorite games.
 
-Note: [This Tetris implementation](https://github.com/nuno-faria/tetris-ai/blob/master/tetris.py) by [nuno-faria](https://github.com/nuno-faria) served as a baseline for this work and were extremely helpful in understanding the game and agent-building requirements.
+Note: [This Tetris implementation](https://github.com/nuno-faria/tetris-ai/blob/master/tetris.py) by [nuno-faria](https://github.com/nuno-faria) served as a baseline for this work and was extremely helpful in understanding the game and agent-building requirements.
 
 ### Checklist:
 1. Create the tetris environment. I should be able to play by myself using functions? - DONE
